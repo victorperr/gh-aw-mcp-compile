@@ -1,12 +1,9 @@
 import os
 
-
-class _MCP:
-    def tool(self, function):
-        return function
+from fastmcp import FastMCP
 
 
-mcp = _MCP()
+mcp = FastMCP("mcp-compile-demo")
 
 
 @mcp.tool
@@ -28,3 +25,7 @@ def save_report(path: str, content: str) -> str:
     with open(path, "w", encoding="utf-8") as handle:
         handle.write(content)
     return path
+
+
+if __name__ == "__main__":
+    mcp.run()

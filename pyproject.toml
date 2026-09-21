@@ -25,7 +25,8 @@ classifiers = [
 dependencies = []
 
 [project.optional-dependencies]
-test = ["pytest>=8"]
+demo = ["fastmcp>=2.0"]
+test = ["pytest>=8", "fastmcp>=2.0"]
 
 [project.scripts]
 mcp-compile = "mcp_compiler.cli:main"

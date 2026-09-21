@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import json
+import os
+import re
 import shutil
 from pathlib import Path
 
@@ -38,7 +40,8 @@ if __name__ == "__main__":
 '''
 
 
-def _workflow(portable: list[dict]) -> str:
+def _workflow(portable: list[dict], source_root: Path, workflow_name: str) -> str:
+    source_path = Path(os.path.relpath(source_root, Path.cwd())).as_posix()
     tools = []
     for tool in portable:
         inputs = []
@@ -61,15 +64,15 @@ def _workflow(portable: list[dict]) -> str:
       import json
       import sys
 
-      sys.path.insert(0, ".")
+            sys.path.insert(0, {json.dumps(source_path)})
       function = getattr(importlib.import_module({module!r}), {tool['name']!r})
       result = function(**inputs)
       print(json.dumps(result, default=str))
     env:
 {secrets or '      # No secrets required.'}
     timeout: 60''')
-    return '''---
-name: MCP ephemeral tools
+    return f'''---
+name: {json.dumps(f"GitHub Agentic Workflow - {workflow_name}")}
 on: workflow_dispatch
 engine: copilot
 mcp-scripts:
@@ -93,9 +96,16 @@ def _report(data: dict) -> str:
     return "\n".join(lines) + "\n"
 
 
-def generate(repository: str | Path, output: str | Path) -> dict:
+def _slug(value: str) -> str:
+    slug = re.sub(r"[^a-z0-9]+", "-", value.lower()).strip("-")
+    return slug or "mcp-tools"
+
+
+def generate(repository: str | Path, output: str | Path, name: str | None = None) -> dict:
     source_root = Path(repository).resolve()
     destination = Path(output).resolve()
+    workflow_name = name or source_root.name
+    workflow_slug = _slug(workflow_name)
     if destination.exists():
         shutil.rmtree(destination)
     destination.mkdir(parents=True)
@@ -113,7 +123,8 @@ def generate(repository: str | Path, output: str | Path) -> dict:
                                                           indent=2) + "\n", encoding="utf-8")
     workflow = destination / ".github" / "workflows"
     workflow.mkdir(parents=True)
-    (workflow / "mcp-tools.md").write_text(_workflow(portable), encoding="utf-8")
+    (workflow / f"{workflow_slug}.md").write_text(
+        _workflow(portable, source_root, workflow_name), encoding="utf-8")
     (destination / "REPORT.md").write_text(_report(data), encoding="utf-8")
     (destination / "SECURITY.md").write_text("# Security review\n\nReview every generated permission and map only the named secrets required by each tool. Do not expose secrets to forked pull requests.\n", encoding="utf-8")
     tests = destination / "tests"

@@ -20,6 +20,8 @@ def main() -> int:
         "compile", help="generate GitHub-native artifacts")
     compile_parser.add_argument("repository", type=Path)
     compile_parser.add_argument("--out", type=Path, default=Path(".mcp-build"))
+    compile_parser.add_argument(
+        "--name", help="workflow display name (defaults to the repository folder name)")
     contract_parser = subparsers.add_parser(
         "contract", help="run generated contract tests")
     contract_parser.add_argument("bundle", type=Path)
@@ -36,9 +38,10 @@ def main() -> int:
                 print(f"  reason:  {'; '.join(tool['reasons'])}")
         return 0
     if args.command == "compile":
-        data = generate(args.repository, args.out)
+        data = generate(args.repository, args.out, args.name)
         print(
             f"Generated {len(data['generated_tools'])} portable tool(s) in {args.out}")
+        print(f"Workflow: {args.out / '.github' / 'workflows'}")
         print(f"Report: {args.out / 'REPORT.md'}")
         return 0
     if args.command == "contract":
