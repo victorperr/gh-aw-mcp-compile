@@ -1,10 +1,14 @@
-# MCP Compile
+# GitHub Agentics Workflows MCP Compile
 
-**"Compile your MCP server into the cheapest secure execution target."**
+> _Compile your MCP server into the cheapest secure execution target_
+
+## 🚀 About
 
 `gh-aw-mcp-compile` is an **early-stage command-line tool** for **turning portable Python MCP tools into GitHub-native, ephemeral execution artifacts**. It helps decide which MCP tools can safely run as ephemeral [GitHub Agentic Workflow](https://github.github.com/gh-aw/) tools instead of requiring a permanent MCP server.
 
-This MVP accepts a Python [FastMCP](https://gofastmcp.com/) repository, discovers `@mcp.tool` functions, classifies portability, and generates GitHub Agentic Workflow mcp-scripts artifacts for tools classified as portable. It also produces a manifest, security review, cost/latency estimates, adapters, and contract tests.
+This MVP accepts a Python [FastMCP](https://gofastmcp.com/) repository, discovers `@mcp.tool` functions, classifies portability, and generates GitHub Agentic Workflow mcp-scripts artifacts for tools classified as portable. 
+
+It also produces a manifest, security review, cost/latency estimates, adapters, and contract tests.
 
 The FastMCP server is the input application. The generated `mcp-scripts` workflow is the deployment target for simple, read-only tools.
 
@@ -29,10 +33,13 @@ The generated bundle contains:
 
 ## Supported MVP shape
 
-The analyzer recognizes Python functions decorated with `@mcp.tool`, `@server.tool`, or `@tool`. It supports primitive JSON-compatible annotations, lists, dictionaries, optional values, and synchronous functions. Tools using files, subprocesses, mutable global state, unsupported annotations, or asynchronous functions are marked partially portable or incompatible rather than silently generated.
+The analyzer recognizes Python functions decorated with `@mcp.tool`, `@server.tool`, or `@tool`. It supports primitive JSON-compatible annotations, lists, dictionaries, optional values, and synchronous functions. 
 
-The generated workflow follows **GitHub Agentic Workflows**  and its `mcp-scripts` model: tools run on the Actions runner for the
-duration of an agentic workflow, with explicitly mapped secrets and no persistent server to operate. GitHub Actions still has runner-minute costs and cold starts; the generated report makes those tradeoffs visible. Treat the generated workflow as read-only: mutating tools belong in safe outputs or another audited execution target. See [MCP Scripts documentation](https://github.github.com/gh-aw/reference/mcp-scripts/) for the contract this generator targets.
+Tools using files, subprocesses, mutable global state, unsupported annotations, or asynchronous functions are marked partially portable or incompatible rather than silently generated.
+
+The generated workflow follows **GitHub Agentic Workflows**  and its `mcp-scripts` model: tools run on the Actions runner for the duration of an agentic workflow, with explicitly mapped secrets and no persistent server to operate. GitHub Actions still has runner-minute costs and cold starts; the generated report makes those tradeoffs visible. Treat the generated workflow as read-only: mutating tools belong in safe outputs or another audited execution target. 
+
+See [MCP Scripts documentation](https://github.github.com/gh-aw/reference/mcp-scripts/) for the contract this generator targets.
 
 ## Run the demo
 
@@ -71,10 +78,6 @@ To run the source MCP server directly over FastMCP's default stdio transport:
 python examples\sample-server\server.py
 ```
 
-That process waits for an MCP client. The compiler demo is usually more useful
-for a first check because it shows the generated manifest, workflow, security
-review, and adapter contract in one run.
-
 ## Development
 
 ```powershell
@@ -86,8 +89,21 @@ The project supports Python 3.10 and newer. The compiler itself uses static anal
 
 ## Security
 
-Generated workflows execute on a GitHub Actions runner outside the agent sandbox. Review generated source, permissions, dependencies, and secret mappings before use. Never expose production secrets to untrusted pull requests. See [SECURITY.md](SECURITY.md) for vulnerability reporting and security expectations.
+Generated workflows execute on a GitHub Actions runner outside the agent sandbox. Review generated source, permissions, dependencies, and secret mappings before use. Never expose production secrets to untrusted pull requests. 
+
+See [SECURITY.md](SECURITY.md) for vulnerability reporting and security expectations.
 
 ## License
 
 MCP Compile is released under the [MIT License](LICENSE).
+
+
+
+<details>
+    <summary>List of improvements</summary>
+
+        - Automatically deploy workflows to GitHub;
+        - Detect or generate the documented dependencies: field: This is important when an MCP tool imports packages such as requests, pandas, or another third-party library. GitHub Agentic Workflows need to know which packages to install before running the tool;
+        - Prove that a tool is truly read-only: The analyzer currently uses heuristics. It can detect obvious operations such as `open(..., "w")`;
+        - Support every FastMCP or Python feature
+</details>
