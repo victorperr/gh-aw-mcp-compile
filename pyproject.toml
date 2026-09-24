@@ -26,7 +26,7 @@ dependencies = []
 
 [project.optional-dependencies]
 demo = ["fastmcp>=2.0"]
-test = ["pytest>=8", "fastmcp>=2.0"]
+test = ["pytest>=8", "pyyaml>=6", "fastmcp>=2.0"]
 
 [project.scripts]
 mcp-compile = "mcp_compiler.cli:main"
